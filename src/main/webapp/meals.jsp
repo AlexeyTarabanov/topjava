@@ -29,6 +29,10 @@
     <hr>
 <%--рисует горизонтальную линию--%>
     <h2>Meals</h2>
+    <a href="meals?action=create">Add Meal</a>
+    <br><%--
+    устанавливает перевод строки в том месте, где этот тег находится
+    в отношении Add Meal таблица спуститься на 1 строку вниз--%>
     <table border="1" cellpadding="8" cellspacing="0"><%--
     table - контейнер для элементов, определяющих содержимое таблицы.
     cellpadding - определяет расстояние между содержимым ячейки таблицы и ее границей
@@ -43,6 +47,9 @@
             (используется для заголовков)--%>
             <th>Description</th>
             <th>Calories</th>
+            <th></th>
+            <th></th><%--
+            добавил дополнительно 2 пустых ячейки--%>
         </tr>
         </thead>
         <c:forEach items="${meals}" var="meal"><%--
@@ -58,6 +65,9 @@
                 td - предназначен для создания одной ячейки таблицы--%>
                 <td>${meal.description}</td>
                 <td>${meal.calories}</td>
+                <td><a href="meals?action=update&id=${meal.id}">Update</a></td>
+                <td><a href="meals?action=delete&id=${meal.id}">Delete</a></td><%--
+                заполнил эти ячейки данными--%>
             </tr>
         </c:forEach>
     </table>
