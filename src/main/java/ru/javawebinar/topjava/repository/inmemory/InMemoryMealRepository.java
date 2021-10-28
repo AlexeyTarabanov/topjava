@@ -21,8 +21,7 @@ import static ru.javawebinar.topjava.repository.inmemory.InMemoryUserRepository.
 @Repository
 public class InMemoryMealRepository implements MealRepository {
 
-    private final Map<Integer, Map<Integer, Meal>> usersMealsMap = new ConcurrentHashMap<>();
-    private final AtomicInteger counter = new AtomicInteger(0);
+    private final Map<Integer, InMemoryBaseRepository<Meal>> usersMealsMap = new ConcurrentHashMap<>();
 
     {
 //        MealsUtil.meals.forEach(meal -> this.save(meal));
@@ -33,18 +32,13 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-        Map<Integer, Meal> meals = usersMealsMap
-                // computeIfAbsent - если значения нет, выполняем функцию
-                .computeIfAbsent(userId, id -> new ConcurrentHashMap<Integer, Meal>(id));
-        if (meal.isNew()) {
-            meal.setId(counter.incrementAndGet());
-            meals.put(meal.getId(), meal);
-            return meal;
+        // Map.computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction)
+        // Метод добавит новый элемент в Map, но только в том случае, если элемент с таким ключом там отсутствует.
+        // В качестве value ему будет присвоен результат выполнения функции mappingFunction.
+        // Если же элемент с таким ключом уже есть — он не будет перезаписан, а останется на месте.
+        InMemoryBaseRepository<Meal> meals = usersMealsMap.computeIfAbsent(userId, uId -> new InMemoryBaseRepository<>());
+        return meals.save(meal);
         }
-
-        // handle case: update, but not present in storage
-        return meals.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
-    }
 
     // теперь все методы будут начинаться с метода get()
     // получаем мапу еды для конкретного юзера
@@ -53,18 +47,14 @@ public class InMemoryMealRepository implements MealRepository {
 
     @Override
     public boolean delete(int id, int userId) {
-        Map<Integer, Meal> meals = usersMealsMap.get(userId);
-        if (meals != null) {
-            if (meals.remove(id) != null) {
-                return true;
-            }
-        }
-        return false;
+        InMemoryBaseRepository<Meal> meals = usersMealsMap.get(userId);
+        if (meals != null && meals.delete(id)) return true;
+        else return false;
     }
 
     @Override
     public Meal get(int id, int userId) {
-        Map<Integer, Meal> meals = usersMealsMap.get(userId);
+        InMemoryBaseRepository<Meal> meals = usersMealsMap.get(userId);
         return meals == null ? null : meals.get(id);
     }
 
@@ -85,11 +75,11 @@ public class InMemoryMealRepository implements MealRepository {
     // поэтому в методе getAll() Predicate всегда будет true (мы ничего не фильтруем)
     public List<Meal> filterByPredicate(int userId, Predicate<Meal> filter) {
         // получаем мапу еды для конкретного юзера
-        Map<Integer, Meal> meals = usersMealsMap.get(userId);
+        InMemoryBaseRepository<Meal> meals = usersMealsMap.get(userId);
         // CollectionUtils.isEmpty()
         // можно использовать для проверки, не является ли список пустым
-        return CollectionUtils.isEmpty(meals) ? Collections.emptyList() :
-                meals.values()
+        return meals == null ? Collections.emptyList() :
+                meals.getCollection()
                 .stream()
                 .filter(filter)
                 // сортируем по времени в обратном порядке
