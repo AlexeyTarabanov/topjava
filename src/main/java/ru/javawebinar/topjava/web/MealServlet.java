@@ -2,10 +2,11 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.util.StringUtils;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.repository.MealRepository;
-import ru.javawebinar.topjava.repository.inmemory.InMemoryMealRepository;
-import ru.javawebinar.topjava.util.MealsUtil;
+import ru.javawebinar.topjava.web.meal.MealRestController;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,29 +20,53 @@ import java.util.Objects;
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
 
-    private MealRepository repository;
+    // через класс ConfigurableApplicationContext, Spring поднимает свои бины
+    // на основе xml конфигурации, которая находится в ClassPath-е
+    private ConfigurableApplicationContext springContext;
+    // Сервлет обращается к контролеру, контроллер вызывает сервис, сервис - репозиторий.
+    private MealRestController mealController;
 
     @Override
+    // Вызывается контейнером сервлета, чтобы указать сервлету, что сервлет вводится в эксплуатацию
     public void init() {
-        repository = new InMemoryMealRepository();
+        // поднимает контекст Спринга при старте сервлета
+        springContext = new ClassPathXmlApplicationContext("spring/spring-app.xml");
+        mealController = springContext.getBean(MealRestController.class);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        String id = request.getParameter("id");
+    // Вызывается контейнером сервлета, чтобы указать сервлету, что сервлет выводится из эксплуатации.
+    public void destroy() {
+        springContext.close();
+        super.destroy();
+    }
 
-        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+    @Override
+    // doPost: обрабатывает запросы POST (отправка данных)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // setCharacterEncoding
+        // - заменяет имя кодировки, используемой в тексте запроса
+        // метод должен быть вызван перед чтением параметров запроса
+        request.setCharacterEncoding("UTF-8");
+
+        Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        repository.save(meal, SecurityUtil.authUserId());
+        // // возвращает: истина, если строка не равна нулю, ее длина больше 0 и она не содержит только пробелов.
+        if (StringUtils.hasLength(request.getParameter("id"))) {
+            mealController.update(meal, getId(request));
+        } else {
+            mealController.create(meal);
+        }
+        // переадресовываем на meals
         response.sendRedirect("meals");
     }
 
     @Override
+    // получение данных
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
@@ -49,14 +74,14 @@ public class MealServlet extends HttpServlet {
             case "delete":
                 int id = getId(request);
                 log.info("Delete {}", id);
-                repository.delete(id, SecurityUtil.authUserId());
+                mealController.delete(id);
                 response.sendRedirect("meals");
                 break;
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
                         new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
-                        repository.get(getId(request), SecurityUtil.authUserId());
+                        mealController.get(getId(request));
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
@@ -64,7 +89,7 @@ public class MealServlet extends HttpServlet {
             default:
                 log.info("getAll");
                 request.setAttribute("meals",
-                        MealsUtil.getTos(repository.getAll(SecurityUtil.authUserId()), MealsUtil.DEFAULT_CALORIES_PER_DAY));
+                        mealController.getAll());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
