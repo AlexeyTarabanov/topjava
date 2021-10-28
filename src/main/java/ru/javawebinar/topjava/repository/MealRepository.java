@@ -19,7 +19,7 @@ public interface MealRepository {
     Meal get(int id, int userId);
 
     // возвращаем отсортированным по dateTime
-    Collection<Meal> getAll(int userId);
+    List<Meal> getAll(int userId);
 
     List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId);
 }
