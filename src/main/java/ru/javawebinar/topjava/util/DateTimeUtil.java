@@ -1,5 +1,8 @@
 package ru.javawebinar.topjava.util;
 
+import org.springframework.lang.Nullable;
+import org.springframework.util.StringUtils;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,6 +30,16 @@ public class DateTimeUtil {
 
         // прибавляем к локальной дате 1 день и у нас получится начало следующего дня
         return localDate != null ? localDate.plus(1, ChronoUnit.DAYS).atStartOfDay() : MAX_DATE;
+    }
+
+    public static @Nullable
+    LocalDate parseLocalDate(@Nullable String str) {
+        return StringUtils.hasLength(str) ? LocalDate.parse(str) : null;
+    }
+
+    public static @Nullable
+    LocalTime parseLocalTime(@Nullable String str) {
+        return StringUtils.hasLength(str) ? LocalTime.parse(str) : null;
     }
 
     public static String toString(LocalDateTime ldt) {
