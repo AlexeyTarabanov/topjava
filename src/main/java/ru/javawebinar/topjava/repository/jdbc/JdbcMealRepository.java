@@ -54,8 +54,8 @@ public class JdbcMealRepository implements MealRepository {
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
-                .addValue("dateTime", meal.getDateTime())
-                .addValue("userId", userId);
+                .addValue("date_time", meal.getDateTime())
+                .addValue("user_id", userId);
 
         if (meal.isNew()) {
             Number newId = insertMeal.executeAndReturnKey(map);

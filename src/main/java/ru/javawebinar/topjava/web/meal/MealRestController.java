@@ -52,10 +52,19 @@ public class MealRestController {
         return service.create(meal, userId);
     }
 
+//    public void update(Meal meal, int id) {
+//        int userId = SecurityUtil.authUserId();
+//        assureIdConsistent(meal, id);
+//        log.info("update {} for user {}", meal, userId);
+//        service.update(meal, userId);
+//    }
+
     public void update(Meal meal, int id) {
         int userId = SecurityUtil.authUserId();
+        log.info("update {} for user {}", meal, id);
+        // проверяем, что id консистенты
+        // (id = 0 или равен id указанному в параметрах)
         assureIdConsistent(meal, id);
-        log.info("update {} for user {}", meal, userId);
         service.update(meal, userId);
     }
 

@@ -4,6 +4,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+/**
+ * В пакете Model
+ * находятся объекты, с которыми работает приложение
+ * (сейчас они находятся в памяти, но затем мы их будем хранить в БД)
+ * bean Meal (UserMeal)
+ * хранит еду пользователя, у которой есть
+ * время, описание и калории
+ * Meal - entity, которая хранится в БД
+ */
+
 public class Meal extends AbstractBaseEntity {
     private LocalDateTime dateTime;
 
@@ -42,6 +52,18 @@ public class Meal extends AbstractBaseEntity {
 
     public LocalTime getTime() {
         return dateTime.toLocalTime();
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCalories(int calories) {
+        this.calories = calories;
     }
 
     @Override

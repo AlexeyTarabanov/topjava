@@ -26,6 +26,8 @@ public class User extends AbstractNamedEntity {
     public User() {
     }
 
+    // конструктор копирования
+    // замена методу clone()
     public User(User u) {
         this(u.id, u.name, u.email, u.password, u.caloriesPerDay, u.enabled, u.registered, u.roles);
     }

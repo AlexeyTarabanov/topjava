@@ -1,5 +1,10 @@
 package ru.javawebinar.topjava.model;
 
+/**
+ * AbstractNamedEntity -
+ * от него можно наследовать все сущности у которых есть имя
+ * */
+
 public abstract class AbstractNamedEntity extends AbstractBaseEntity {
 
     protected String name;

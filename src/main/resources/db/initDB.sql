@@ -55,6 +55,5 @@ CREATE TABLE meals
 
 -- если мы хотим, чтобы столбец имел только уникальные значения, то для него можно определить атрибут UNIQUE.
 -- в данном случае значение meals_unique_user_datetime_idx, будет иметь уникальное значение
-CREATE
+CREATE UNIQUE INDEX meals_unique_user_datetime_idx ON meals (user_id, date_time);
 -- нельзя создать еду для одного пользователя с одним и тем же date_time
-UNIQUE INDEX meals_unique_user_datetime_idx ON meals (user_id, date_time);

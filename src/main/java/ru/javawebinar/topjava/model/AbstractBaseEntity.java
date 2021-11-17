@@ -1,5 +1,11 @@
 package ru.javawebinar.topjava.model;
 
+/**
+ AbstractBaseEntity будет хранить primary key,
+ чтобы не дублировать в каждую сущность.
+ primary key - уникальный идентификатор
+ */
+
 public abstract class AbstractBaseEntity {
     public static final int START_SEQ = 100000;
 
