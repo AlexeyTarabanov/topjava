@@ -12,6 +12,13 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfDayOrMin;
 import static ru.javawebinar.topjava.util.DateTimeUtil.atStartOfNextDayOrMax;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 
+
+/**
+ находится между контроллером и репозиторием
+ реализует всю необходимую логику приложения, все вычисления, взаимодействует с БД
+ и передает уровню представления (Controller) результат обработки.
+ */
+
 @Service
 public class MealService {
 
@@ -26,6 +33,7 @@ public class MealService {
     }
 
     public void delete(int id, int userId) {
+        // если еда с этим id чужая или отсутствует - NotFoundException.
         checkNotFoundWithId(repository.delete(id, userId), id);
     }
 
